@@ -1,0 +1,14 @@
+To install:
+
+1) Check you have the following installed:
+   - Parallel::ForkManager (libparallel-forkmanager-perl
+     package under GNU/Debian)
+   - Getopt::Std (part of the standard Perl distribution)
+   - Time::HiRes (part of the standard Perl distribution)
+   - File::Basename (part of the standard Perl distribution)
+   - IO::Socket::UNIX (part of the standard Perl distribution)
+2) Make sure UNIXSocketScanner.pl is executable (chmod u+x
+   UNIXSocketScanner.pl)
+
+The latest version of UNIXSocketScanner can always be found at
+<http://www.nth-dimension.org.uk/>.

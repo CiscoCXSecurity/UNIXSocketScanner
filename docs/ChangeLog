@@ -1,0 +1,10 @@
+0.1 - 0.2
+
+* Rewritten to use Parallel::ForkManager
+* Extended native probe format to support checking
+  the response
+* Added support for nmap service probes
+
+0.0 - 0.1
+
+* Initial PoC
