@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Header: /var/lib/cvsd/var/lib/cvsd/UNIXSocketScanner/src/UNIXSocketScanner.pl,v 1.2 2012-11-26 00:09:33 timb Exp $
+# $Header: /var/lib/cvsd/var/lib/cvsd/UNIXSocketScanner/src/UNIXSocketScanner.pl,v 1.3 2012-11-26 15:45:24 timb Exp $
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -121,7 +121,7 @@ sub socketread {
         $length = shift;
         eval {
                 local $SIG{ALRM} = sub {
-                        die "ALARM";
+                        die "UNIXSocketScanner::Exception::Host::SocketRead::IO::Socket::UNIX::Recv";
                 };
                 ualarm($timeout * 1000000);
 		$sockethandle = $self->{'sockethandle'};
@@ -129,7 +129,7 @@ sub socketread {
                 ualarm(0);
 
         };
-        if ($@ =~ /ALARM/) {
+        if ($@ =~ /UNIXSocketScanner::Exception::Host::SocketRead::IO::Socket::UNIX::Recv/) {
                 return "";
         }
         return $readdata;
@@ -151,10 +151,15 @@ sub check {
 	$probestring = shift;
 	$verboseflag = shift;
 	eval {
+		local $SIG{ALRM} = sub {
+			die "UNIXSocketScanner::Exception::Host::Check::IO::Socket::UNIX::New";
+		};
+                ualarm(1000000);
 		$self->{'sockethandle'} = IO::Socket::UNIX->new(Type => SOCK_STREAM, Peer => $self->{'filename'});
+                ualarm(0);
 	};
 	if ($@ ne "") {
-		die "UNIXSocketScanner::Exception::Host::Check::IO::Socket::UNIX::New";
+		die $@;
 	} else {
 		eval {
 			$sockethandle = $self->{'sockethandle'};
@@ -361,7 +366,7 @@ if (defined($nmapprobesfilename)) {
 					$probestring =~ s/\\n/\x0a/g;
 					$probestring =~ s/\\r/\x0d/g;
 					$probestring =~ s/\\0/\x00/g;
-					$probestring =~ s/\\x([0-9a-f][0-9a-f])/chr(hex($1))/eg;
+					$probestring =~ s/\\x([0-9a-fA-F][0-9a-fA-F])/chr(hex($1))/eg;
 					$responsepattern = "dummy";
 					$socketprobe = UNIXSocketScanner::Probe->new($probename, $probestring, $responsepattern);
 					push(@socketprobes, $socketprobe);
@@ -392,6 +397,8 @@ while ($filename = <>) {
 		$responsestring = $targetsocket->check($socketprobe->probestring(), $verboseflag);
 		$responsepattern = $socketprobe->responsepattern();
 		if ($responsestring =~ /$responsepattern/s) {
+			$responsestring =~ s/\x0a/\\n/g;
+			$responsestring =~ s/\x0d/\\r/g;
 			print $writehandle "M	" . $socketprobe->info() . "\n";
 			print $writehandle "T	" . $socketprobe->info() . "	" . $responsestring . "\n";
 		} else {
@@ -399,10 +406,12 @@ while ($filename = <>) {
 			foreach $socketresponse (@{$socketresponses->{$socketprobe->info()}}) {
 				$responsepattern = $socketresponse->responsepattern();
 				if ($responsestring =~ /$responsepattern/s) {
+					$responsestring =~ s/\x0a/\\n/g;
+					$responsestring =~ s/\x0d/\\r/g;
 					print $writehandle "M	" . $socketprobe->info() . "\n";
 					print $writehandle "T	" . $socketprobe->info() . "	" . $responsestring . "\n";
 					print $writehandle "M	" . $socketresponse->info() . "\n";
-					print $writehandle "T	" . $socketresponse>info() . "	" . $responsestring . "\n";
+					print $writehandle "T	" . $socketresponse->info() . "	" . $responsestring . "\n";
 				}
 			}
 		}

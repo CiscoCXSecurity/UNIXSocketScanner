@@ -1,3 +1,11 @@
+0.2 - 0.3
+
+* Fixed minor bug due to a typo
+* Fixed minor bug when constructing probes from nmap-sevice-probes
+* Added timeouts on conection
+* Now outputs full details of trigger even on matches (only
+  in verbose mode)
+
 0.1 - 0.2
 
 * Rewritten to use Parallel::ForkManager
