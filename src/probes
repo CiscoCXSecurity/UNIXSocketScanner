@@ -1,3 +1,4 @@
+# \/ kills akonadiserver with a NULL deref (https://bugs.kde.org/show_bug.cgi?id=310711)
 empty	\n	dummy
 help	HELP\n	dummy
 ?	?\n	dummy
