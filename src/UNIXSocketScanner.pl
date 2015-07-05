@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Header: /var/lib/cvsd/var/lib/cvsd/UNIXSocketScanner/src/UNIXSocketScanner.pl,v 1.3 2012-11-26 15:45:24 timb Exp $
+# $Revision$
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
