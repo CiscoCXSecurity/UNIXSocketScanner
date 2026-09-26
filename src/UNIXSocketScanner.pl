@@ -433,4 +433,4 @@ foreach $targetsocket (@targetsockets) {
 		}
 	}
 }
-exit(1);
+exit(0);
