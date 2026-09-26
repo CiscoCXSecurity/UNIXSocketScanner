@@ -100,6 +100,8 @@ sub new {
 	$self = {};
 	bless($self, $class);
 	$self->{'filename'} = shift;
+	$self->{'matches'} = {};
+	$self->{'triggers'} = {};
 	return $self;
 }
 
@@ -110,29 +112,28 @@ sub info {
 }
 
 sub socketread {
-	my $class;
 	my $self;
 	my $timeout;
 	my $length;
 	my $sockethandle;
 	my $readdata;
 	$self = shift;
-        $timeout = shift;
-        $length = shift;
-        eval {
-                local $SIG{ALRM} = sub {
-                        die "UNIXSocketScanner::Exception::Host::SocketRead::IO::Socket::UNIX::Recv";
-                };
-                ualarm($timeout * 1000000);
+	$timeout = shift;
+	$length = shift;
+	eval {
+		local $SIG{ALRM} = sub {
+			die "UNIXSocketScanner::Exception::Host::SocketRead::IO::Socket::UNIX::Recv";
+		};
+		ualarm($timeout * 1000000);
 		$sockethandle = $self->{'sockethandle'};
-                $sockethandle->recv($readdata, $length);
-                ualarm(0);
+		$sockethandle->recv($readdata, $length);
+		ualarm(0);
 
-        };
-        if ($@ =~ /UNIXSocketScanner::Exception::Host::SocketRead::IO::Socket::UNIX::Recv/) {
-                return "";
-        }
-        return $readdata;
+	};
+	if ($@ =~ /UNIXSocketScanner::Exception::Host::SocketRead::IO::Socket::UNIX::Recv/) {
+		return "";
+	}
+	return $readdata;
 }
 
 sub pipe {
@@ -154,9 +155,9 @@ sub check {
 		local $SIG{ALRM} = sub {
 			die "UNIXSocketScanner::Exception::Host::Check::IO::Socket::UNIX::New";
 		};
-                ualarm(1000000);
+		ualarm(1000000);
 		$self->{'sockethandle'} = IO::Socket::UNIX->new(Type => SOCK_STREAM, Peer => $self->{'filename'});
-                ualarm(0);
+		ualarm(0);
 	};
 	if ($@ ne "") {
 		die $@;
@@ -219,7 +220,6 @@ sub parseresponses {
 sub addmatch {
 	my $self;
 	my $probename;
-	my $response;
 	$self = shift;
 	$probename = shift;
 	$self->{'matches'}{$probename} = 1;
@@ -298,7 +298,7 @@ sub main::VERSION_MESSAGE {
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 getopts("vx:p:n:", \%argumentslist);
 if (defined($argumentslist{'v'})) {
-        $verboseflag = 1;
+	$verboseflag = 1;
 }
 if (defined($argumentslist{'x'}) && ($argumentslist{'x'} =~ /([0-9]+)/)) {
 	$maximumprocess = $1;
@@ -316,7 +316,7 @@ if (!defined($probesfilename) && !defined($nmapprobesfilename)) {
 }
 
 $forkmanager = Parallel::ForkManager->new($maximumprocess);
-$forkmanager->run_on_finish(sub { 
+$forkmanager->run_on_finish(sub {
 	my $processid;
 	my $returncode;
 	my $targetsocket;
@@ -334,15 +334,17 @@ $forkmanager->run_on_finish(sub {
 	print "I: " . $targetsocket->info() . " finished\n";
 });
 if (defined($probesfilename)) {
-	open($probeshandle, "<" . $probesfilename);
+	open($probeshandle, "<", $probesfilename);
 	while ($probeline = <$probeshandle>) {
 		$probeline =~ s/\x0a//g;
-		if ($probeline =~ /^#/) {
+		if (($probeline =~ /^#/) || ($probeline !~ /^[A-Za-z0-9\-_\.]/)) {
 			next;
 		} else {
 			($probename, $probestring, $responsepattern) = split(/	/, $probeline);
 			$probestring =~ s/\\n/\x0a/g;
 			$probestring =~ s/\\r/\x0d/g;
+			$probestring =~ s/\\0/\x00/g;
+			$probestring =~ s/\\x([0-9a-fA-F][0-9a-fA-F])/chr(hex($1))/eg;
 			$socketprobe = UNIXSocketScanner::Probe->new($probename, $probestring, $responsepattern);
 			push(@socketprobes, $socketprobe);
 		}
@@ -350,7 +352,7 @@ if (defined($probesfilename)) {
 	close($probeshandle);
 }
 if (defined($nmapprobesfilename)) {
-	open($probeshandle, "<" . $nmapprobesfilename);
+	open($probeshandle, "<", $nmapprobesfilename);
 	$parseflag = 0;
 	while ($probeline = <$probeshandle>) {
 		if ($probeline =~ /^#/) {
@@ -435,4 +437,4 @@ foreach $targetsocket (@targetsockets) {
 		}
 	}
 }
-exit(1);
+exit(0);
