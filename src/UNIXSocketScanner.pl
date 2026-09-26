@@ -100,6 +100,8 @@ sub new {
 	$self = {};
 	bless($self, $class);
 	$self->{'filename'} = shift;
+	$self->{'matches'} = {};
+	$self->{'triggers'} = {};
 	return $self;
 }
 
