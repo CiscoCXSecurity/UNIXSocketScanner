@@ -116,22 +116,22 @@ sub socketread {
 	my $sockethandle;
 	my $readdata;
 	$self = shift;
-        $timeout = shift;
-        $length = shift;
-        eval {
-                local $SIG{ALRM} = sub {
-                        die "UNIXSocketScanner::Exception::Host::SocketRead::IO::Socket::UNIX::Recv";
-                };
-                ualarm($timeout * 1000000);
+	$timeout = shift;
+	$length = shift;
+	eval {
+		local $SIG{ALRM} = sub {
+			die "UNIXSocketScanner::Exception::Host::SocketRead::IO::Socket::UNIX::Recv";
+		};
+		ualarm($timeout * 1000000);
 		$sockethandle = $self->{'sockethandle'};
-                $sockethandle->recv($readdata, $length);
-                ualarm(0);
+		$sockethandle->recv($readdata, $length);
+		ualarm(0);
 
-        };
-        if ($@ =~ /UNIXSocketScanner::Exception::Host::SocketRead::IO::Socket::UNIX::Recv/) {
-                return "";
-        }
-        return $readdata;
+	};
+	if ($@ =~ /UNIXSocketScanner::Exception::Host::SocketRead::IO::Socket::UNIX::Recv/) {
+		return "";
+	}
+	return $readdata;
 }
 
 sub pipe {
@@ -153,9 +153,9 @@ sub check {
 		local $SIG{ALRM} = sub {
 			die "UNIXSocketScanner::Exception::Host::Check::IO::Socket::UNIX::New";
 		};
-                ualarm(1000000);
+		ualarm(1000000);
 		$self->{'sockethandle'} = IO::Socket::UNIX->new(Type => SOCK_STREAM, Peer => $self->{'filename'});
-                ualarm(0);
+		ualarm(0);
 	};
 	if ($@ ne "") {
 		die $@;
@@ -296,7 +296,7 @@ sub main::VERSION_MESSAGE {
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 getopts("vx:p:n:", \%argumentslist);
 if (defined($argumentslist{'v'})) {
-        $verboseflag = 1;
+	$verboseflag = 1;
 }
 if (defined($argumentslist{'x'}) && ($argumentslist{'x'} =~ /([0-9]+)/)) {
 	$maximumprocess = $1;
