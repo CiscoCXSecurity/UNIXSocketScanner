@@ -343,6 +343,8 @@ if (defined($probesfilename)) {
 			($probename, $probestring, $responsepattern) = split(/	/, $probeline);
 			$probestring =~ s/\\n/\x0a/g;
 			$probestring =~ s/\\r/\x0d/g;
+			$probestring =~ s/\\0/\x00/g;
+			$probestring =~ s/\\x([0-9a-fA-F][0-9a-fA-F])/chr(hex($1))/eg;
 			$socketprobe = UNIXSocketScanner::Probe->new($probename, $probestring, $responsepattern);
 			push(@socketprobes, $socketprobe);
 		}
