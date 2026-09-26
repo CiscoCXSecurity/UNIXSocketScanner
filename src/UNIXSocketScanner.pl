@@ -314,7 +314,7 @@ if (!defined($probesfilename) && !defined($nmapprobesfilename)) {
 }
 
 $forkmanager = Parallel::ForkManager->new($maximumprocess);
-$forkmanager->run_on_finish(sub { 
+$forkmanager->run_on_finish(sub {
 	my $processid;
 	my $returncode;
 	my $targetsocket;
