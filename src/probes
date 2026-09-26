@@ -1,13 +1,144 @@
+# ----------------------------------------------------------------------
+# generic
+# ----------------------------------------------------------------------
+
 # \/ kills akonadiserver with a NULL deref (https://bugs.kde.org/show_bug.cgi?id=310711)
 empty	\n	dummy
+crlf	\r\n	dummy
+
+# ----------------------------------------------------------------------
+# generic line-oriented services
+# ----------------------------------------------------------------------
+
+version	VERSION\n	dummy
+version-crlf	VERSION\r\n	dummy
 help	HELP\n	dummy
+help-crlf	HELP\r\n	dummy
+quit	QUIT\n	dummy
+quit-crlf	QUIT\r\n	dummy
 ?	?\n	dummy
-overflow	AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n	dummy
-formatstring	%s\n	dummy
+?-crlf	?\r\n	dummy
+ping	PING\n	dummy
+ping-crlf	PING\r\n	dummy
+status	STATUS\n	dummy
+status-crlf	STATUS\r\n	dummy
+
+# ----------------------------------------------------------------------
+# random triggers
+# ----------------------------------------------------------------------
+
 scan	SCAN a\n	dummy
 caps	caps\n	dummy
-avahi-fuck	FUCK\n	^\+ FUCK: Go fuck yourself.*
 null	null\n	dummy
 displayq	displayq long\n	dummy
 list	list\n	dummy
+
+# ----------------------------------------------------------------------
+# HTTP
+# ----------------------------------------------------------------------
+
 http-get	GET / HTTP/1.0\n\n	^HTTP/1.0 200 OK.*
+http-get-crlf	GET / HTTP/1.0\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}
+http-head-crlf	HEAD / HTTP/1.0\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}
+http-get-11-crlf	GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}
+http-options-crlf	OPTIONS / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}
+
+# common local-service HTTP endpoints
+
+http-version	GET /version HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}
+http-status	GET /status HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}
+http-metrics	GET /metrics HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}
+
+# ----------------------------------------------------------------------
+# Docker HTTP APIs
+# ----------------------------------------------------------------------
+
+docker-ping	GET /_ping HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}\r?\n.*(?:OK|Docker)
+docker-version	GET /version HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}.*(?:ApiVersion|Version|MinAPIVersion)
+docker-info	GET /info HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}.*(?:Containers|Driver|ServerVersion)
+
+# ----------------------------------------------------------------------
+# Podman HTTP APIs
+# ----------------------------------------------------------------------
+
+podman-version	GET /version HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}.*(?:APIVersion|Version|GoVersion)
+podman-libpod	GET /libpod/info HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}.*(?:host|version|registries)
+
+# ----------------------------------------------------------------------
+# Redis RESP
+# ----------------------------------------------------------------------
+
+redis-ping	*1\r\n$4\r\nPING\r\n	^\+PONG\r\n
+redis-ping-array	*1\r\n$4\r\nPING\r\n	^\+PONG\r\n
+redis-inline-ping	PING\r\n	^\+PONG\r\n
+
+# ----------------------------------------------------------------------
+# Memcached
+# ----------------------------------------------------------------------
+
+memcached-version-crlf	version\r\n	^VERSION [0-9]+\.[0-9]+\.[0-9]+\r\n
+memcached-version	version\n	^VERSION [0-9]+\.[0-9]+\.[0-9]+
+
+# ----------------------------------------------------------------------
+# PostgreSQL
+# ----------------------------------------------------------------------
+
+postgresql-ssl-request	\x00\x00\x00\x08\x04\xd2\x16\x2f	^[SN]
+
+# ----------------------------------------------------------------------
+# MySQL / MariaDB
+# ----------------------------------------------------------------------
+
+mysql-greeting		^....\x0a
+mariadb-greeting		^....\x0a
+
+# ----------------------------------------------------------------------
+# SSH
+# ----------------------------------------------------------------------
+
+ssh-identification		^SSH-2\.0-
+
+# ----------------------------------------------------------------------
+# TLS
+# ----------------------------------------------------------------------
+
+tls-clienthello	\x16\x03\x01\x00\x2f\x01\x00\x00\x2b\x03\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00	^\x16\x03(?:\x00|\x01|\x02)
+
+# ----------------------------------------------------------------------
+# D-Bus
+# ----------------------------------------------------------------------
+
+dbus-auth	\x00AUTH EXTERNAL 0000\r\n	^(?:REJECTED|OK|DATA|ERROR)
+
+# ----------------------------------------------------------------------
+# SSH agent
+# ----------------------------------------------------------------------
+
+ssh-agent-identities	\x00\x00\x00\x01\x0b	^\x00\x00
+
+# ----------------------------------------------------------------------
+# systemd / journald / local text endpoints
+# ----------------------------------------------------------------------
+
+systemd-version	GET / HTTP/1.0\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}
+journal-text	\n	dummy
+
+# ----------------------------------------------------------------------
+# CUPS / local HTTP services
+# ----------------------------------------------------------------------
+
+cups-root	GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}
+cups-printers	GET /printers/ HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n	^HTTP/[0-9]+\.[0-9]+ [0-9]{3}
+
+# ----------------------------------------------------------------------
+# Avahi
+# ----------------------------------------------------------------------
+
+avahi-fuck	FUCK\n	^\+ FUCK: Go fuck yourself.*
+
+# ----------------------------------------------------------------------
+# exploitation
+# ----------------------------------------------------------------------
+
+overflow	AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n	dummy
+formatstring	%s\n	dummy
