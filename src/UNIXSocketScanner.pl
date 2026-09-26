@@ -337,7 +337,7 @@ if (defined($probesfilename)) {
 	open($probeshandle, "<", $probesfilename);
 	while ($probeline = <$probeshandle>) {
 		$probeline =~ s/\x0a//g;
-		if ($probeline =~ /^#/) {
+		if (($probeline =~ /^#/) || ($probeline !~ /^[A-Za-z0-9\-_\.]/)) {
 			next;
 		} else {
 			($probename, $probestring, $responsepattern) = split(/	/, $probeline);
