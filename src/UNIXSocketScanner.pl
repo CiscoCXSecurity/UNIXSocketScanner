@@ -110,7 +110,6 @@ sub info {
 }
 
 sub socketread {
-	my $class;
 	my $self;
 	my $timeout;
 	my $length;
@@ -219,7 +218,6 @@ sub parseresponses {
 sub addmatch {
 	my $self;
 	my $probename;
-	my $response;
 	$self = shift;
 	$probename = shift;
 	$self->{'matches'}{$probename} = 1;
