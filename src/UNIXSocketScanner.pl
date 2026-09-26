@@ -332,7 +332,7 @@ $forkmanager->run_on_finish(sub {
 	print "I: " . $targetsocket->info() . " finished\n";
 });
 if (defined($probesfilename)) {
-	open($probeshandle, "<" . $probesfilename);
+	open($probeshandle, "<", $probesfilename);
 	while ($probeline = <$probeshandle>) {
 		$probeline =~ s/\x0a//g;
 		if ($probeline =~ /^#/) {
@@ -348,7 +348,7 @@ if (defined($probesfilename)) {
 	close($probeshandle);
 }
 if (defined($nmapprobesfilename)) {
-	open($probeshandle, "<" . $nmapprobesfilename);
+	open($probeshandle, "<", $nmapprobesfilename);
 	$parseflag = 0;
 	while ($probeline = <$probeshandle>) {
 		if ($probeline =~ /^#/) {
